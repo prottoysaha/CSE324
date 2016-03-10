@@ -1,0 +1,651 @@
+\documentclass{article}
+
+\usepackage{color}
+\usepackage{dirtree}
+\usepackage{listings}
+
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+
+\lstset{
+   language=JavaScript,
+   backgroundcolor=\color{lightgray},
+   extendedchars=true,
+   basicstyle=\footnotesize\ttfamily,
+   showstringspaces=false,
+   showspaces=false,
+   numbers=left,
+   numberstyle=\footnotesize,
+   numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
+
+\begin{document}
+
+\title{Unit Testing, MVC Pattern, and Git}
+\author{Nazmus Saquib}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Unit Testing}
+Knowingly or unknowingly, we have been performing testing right from the beginning of our coding life.
+When we finish up writing a code and check whether it does what it is supposed to do,
+we are performing kind of a testing.
+When we debug through our code using various debug tools, we are also performing some kind of a testing.
+The problem with this approach is a lot of manual labor is involved, we need to step through our statements one by one.
+It would have been great if we could automate the process.
+Sometimes we insert arbitrary statements to spit out values of different variables in our code,
+or simply  to check whether our code enters a certain code block - that's also testing.
+But these statements are not really productive, they don't add any functionality to our code.
+Moreover we need to go through our code again and either remove them or comment them out.
+Once again, we are stuck with manual labor.
+In general, we could say testing is something that we do to lift our confidence level higher regarding the fact that
+our code does what it should do - from the perspective of the coder and/or the end-user.
+If we code and test incrementally, we can figure out whether a new piece of code has somehow unearthed a previous bug
+at the quickest possible time.
+In this lecture we are concerned about a very specific type of testing - \textbf{unit testing}.
+There are other kinds of testing too - functional testing, UI testing, performance testing, etc.
+But those are out of our current scope.
+In your term project you are going to have to do a bit of unit testing, exactly which part(s) will have to be tested
+will be determined later.
+
+\subsection{What is Unit Testing}
+From a linguistic point of view, \textit{unit} means the smallest building block of something.
+For example, in case of human body the unit is a \textit{cell}.
+So what might be the unit of our source code? Our code might have a number of classes, so the answer might be a \textit{class}.
+Can we go to finer granularity? Well, our classes are made up of a bunch functions, so a better answer would be a \textit{function}.
+And if we want to attain an even finer granularity, we could say the various execution paths a function takes.
+In general, through unit testing we test each of our functions - 
+testing perhaps all or most of the branches our functions take.
+While we are at it, there is a related term known as the \textbf{path coverage}.
+It simply denotes the percentage of paths / branches that are covered through our tests.
+
+\subsection{Some Terminologies}
+When we are working with unit testing, a few terminologies always seem to creep up:
+\begin{description}
+\item[Test case] A test case is a function that tests another function in our source code.
+Generally one test case tests only one feature of a function. 
+So one function can actually have a number of test cases associated with it.
+\item[Test suite] A test suite is simply a collection of test cases. Test suites might be nested. 
+For example, we might have a class with two functions in it.
+So each of the functions will have a test suite.
+These two test suites will make up one test suite for the class.
+\item[Assertions] Generally, when we say we are asserting a statement, we are confidently saying that the statement is true.
+The statement might be positive or negative.
+When it comes to unit testing, assertions are simply functions which tell us whether a particular incident is true or not.
+For example, we might want to assert whether a result is equal to/greater than/less than another given value.
+We might simply want to assert whether a function gets called along the way of our execution.
+We might even want to assert whether a particular member has been defined.
+There is a huge array of assertions that we can perform throughout our unit testing procedure.
+
+\end{description}
+
+\subsection{Unit Testing Frameworks}
+Irrespective of which language we are using, 
+we will probably be able to find a number of unit testing frameworks for that language.
+For Java the leading framework is JUnit, for C\# NUnit, for PHP PHPUnit, so on and so forth.
+These frameworks make our life a lot easier when we are performing unit testing.
+It's a good idea to have a clear concept regarding at least one unit testing framework for your primary language.
+As the underlying methodologies of the frameworks are quite similar, one should not face that much of a problem in switching frameworks.
+
+\subsection{Equivalence Classes and Boundary Value Analysis}
+\textbf{Equivalence classes} simply divide all possible inputs to our programs into a number of classes.
+To make the idea a bit more concrete, 
+suppose we are interested in writing a simple function that is going to toggle the cases of its string argument.
+So basically all lower case alphabetic characters will be converted into upper case alphabetic characters,
+all upper case alphabetic characters will be converted into lower case alphabetic characters, and non-alphabetic characters
+will remain unchanged. Let us name this function \textit{ChangeCase}.
+Here's a question for you, what are the different types of inputs we might have?
+A brief consideration yields that broadly speaking, we might have three types of inputs:
+\begin{enumerate}
+	\item lower case alphabetic characters,
+	\item upper case alphabetic characters, and
+	\item non-alphabetic characters.
+\end{enumerate}
+The utility of equivalence classes is that once we see a few inputs from a particular equivalence class is giving the expected result,
+we can sort of achieve a pretty high confidence level regarding the fact that the other inputs from this class will also give
+expected results.
+
+Now equivalence classes alone are not really sufficient to give us that much of a confidence level,
+we need another concept known as the \textbf{boundary value analysis} that complements our equivalence classes.
+It works with the values at the extreme ends of our equivalence classes.
+In our example, for the first equivalence class (lower case letters) the boundary values are \textit{a} and \textit{z}.
+For the second equivalence class (upper case letters) the boundary values are \textit{A} and \textit{Z}.
+The third equivalence class does not really require any boundary value analysis.
+As most of the time we delineate our area of interest in our code through the boundary values of an input range,
+it is important that we perform boundary value analysis.
+Equivalence class coupled with boundary value analysis solidifies the outcome of our testing.
+
+\subsection{A Hands-on Example}
+In this subsection we are going to perform unit-testing for our \textit{ChangeCase} function.
+I am going to use JavaScript (actually NodeJS, which can be thought of as JavaScript on the server side) 
+for this short project. Be advised that this tutorial is not about ``unit testing in JavaScript'', rather it is about
+``basic workflow of unit testing''. I have simply chosen to show it in JavaScript, that's all.
+At this point you have two options:
+\begin{enumerate}
+	\item You can follow along with me, I'll show you everything from installation of frameworks to the very end of testing.
+	\item You can read this whole subsection first, understand the basics, 
+	and then get on coding with your preferred language and framework.
+\end{enumerate}
+
+\subsubsection{Installation of NodeJS and Jasmine}
+Jasmine is a unit testing framework for JavaScript.
+If you are on a UNIX machine, you can install NodeJS using your distro's package manager.
+For example if you are using Ubuntu, you would do something like this:
+\begin{lstlisting}[language=bash]
+	$ sudo apt-get install nodejs
+	$ sudo ln -s /usr/bin/nodejs /usr/bin/node
+	$ sudo apt-get install npm
+	$ sudo npm install -g jasmine
+\end{lstlisting}
+The second command is simply to create an alias for nodejs, 
+as a lot of NodeJS packages internally use the name node instead of nodejs.
+The third command is for installing npm - node package manager. Basically npm is to NodeJS what apt-get is to Ubuntu.
+We can install various packages for NodeJS through npm.
+Through the last command we are installing Jasmine globally.
+The package can be installed locally on a project basis, or globally on system basis.
+Here I just chose to install on a system basis.
+
+If you are a Windows user, you can go to \textit{nodejs.org} and download binaries from there.
+Be sure to update your environment variables according to your installation folder, 
+otherwise you won't be able to execute commands from the cmd.
+Recent binaries should contain npm packaged with NodeJS by default, just in case it is missing, you can download
+npm from \textit{npmjs.com}.
+
+\subsubsection{Directory Structure}
+It is a good practice to keep our source codes in one directory and our test codes in another directory.
+Let us create a directory named \textit{ChangeCase}, and inside that directory we are going to create another directory named \textit{src}.
+We still haven't created a directory for our test codes. 
+We will generate a directory through jasmine while we are inside our \textit{ChangeCase} directory:
+\begin{lstlisting}[language=bash]
+	$ jasmine init
+	$ sudo chmod 777 spec
+\end{lstlisting}
+The first command creates a folder named \textit{spec} along with a few files, which we won't generally have to modify. 
+The second command simply grants permission to all users to read, write and execute the spec folder.
+We are going to create a file named \textit{ChangeCase.js} within our \textit{src} folder - this is where we are
+going to write our source code.
+We are also going to create a file named \textit{ChangeCaseSpec.js} within our \textit{spec} folder - this is where we are
+going to write our test codes.
+Our final directory structure looks like this: \\
+
+\dirtree{%
+.1 ChangeCase.
+.2 src.
+.3 ChangeCase.js.
+.2 spec.
+.3 support.
+.4 jasmine.json.
+.3 ChangeCaseSpec.js.
+}
+
+These are the points to take away from this subsection:
+\begin{enumerate}
+	\item We need to keep our source codes and test codes separate.
+	\item How we are going to generate the test folder and what its name is going to be depends on the framework we are using.
+	\item Generally we maintain one test file for one source file, and words like \textit{spec} or \textit{test}
+		(depending on the framework) are appended to the name of the test file.
+		Most of the time our framework is still going to work if we do not follow this step strictly, 
+		but it is considered to be a good practice to do so.
+\end{enumerate}
+
+\subsubsection{The Source Code}
+Our \textit{ChangeCase} function is going to accept a \textit{string} argument and return another string with the cases beign toggled.
+Let us get right into coding and then I will explain each of the major lines.
+\begin{lstlisting}[language=JavaScript]
+var ChangeCase = function(str){
+	var strChanged = "";
+	for(var i = 0; i < str.length; i++){
+		if(str.charCodeAt(i) >= 97 && str.charCodeAt(i) <= 122){
+			strChanged += String.fromCharCode(str.charCodeAt(i) - 32);
+		}else if(str.charCodeAt(i) >= 65 && str.charCodeAt(i) <= 90){
+			strChanged += String.fromCharCode(str.charCodeAt(i) + 32);
+		}else{ //non-alphabetic characters
+			strChanged += str[i];
+		}
+	}
+	return strChanged;
+};
+
+module.exports = {
+	ChangeCase: ChangeCase
+};
+\end{lstlisting}
+In line number 1 we are creating a handler for our function through the variable \textit{ChangeCase}. So basically the function
+is callable by writing \textit{ChangeCase} followed by parameter within parentheses.
+In line number 2 we are initializing the variable \textit{strChanged} to the empty string, this will be returned by the function.
+We start iterating over each character of our parameter in line number 3.
+We can get the ascii value of the character in ith position of a string by the function \textit{charCodeAt}.
+We can create a character from a specific ascii value through the function \textit{fromCharCode}.
+In line numbers 4-6 we check if a character is lower cased, if it is we convert it to upper case.
+In line numbers 6-8 we check if a character is upper cased, if it is we convert it to lower case.
+In line numbers 8-10 we don't make any modifications to the character as it is non-alphabetic.
+In line number 12 we return \textit{strchanged}.
+
+In the last three lines we are basically making our JavaScript file ``includeable''. We are creating an object
+which has the name \textit{module.exports} - it's important that we use this exact name.
+We have an item named \textit{ChangeCase} within this object (the first one before `:' in line number 16) - technically
+we could have used any name here. The second \textit{ChangeCase} refers to the variable we created in the very first line.
+If in the first line we used a different name like toggleCase, we would have written that instead after the `:'.
+
+\subsubsection{The Test Code}
+We start by first including our source file:
+\begin{verbatim}
+var lib = require("../src/ChangeCase.js");
+\end{verbatim}
+Here we are simply creating a reference to whatever is being returned from our source file to the variable \textit{lib}.
+Recall that our source file and test file are in two separate directories in the same level - so we need to go one level up,
+go into the \textit{src} directory and then grab the source file.
+The first thing that we need to do is create a test suite for our function.
+In jasmine we do this through a function named \textit{describe} which takes two parameters - a string and a callback function.
+The string can be anything we want, but it is generally the name of the function.
+Our test cases reside within the callback function. A test case is in turn created by a function named \textit{it}.
+Test cases take two parameters - a string and a callback function. The string can again be anything we want, and generally
+takes a very descriptive form - expressing what we are testing through this test case.
+Finally our assertions reside within the callback function. Assertions are simply functions named \textit{expect}.
+Let us take a look at the full test code to get a better idea.
+\begin{lstlisting}[language=JavaScript]
+var lib = require("../src/ChangeCase.js");
+describe("ChangeCase -", function(){
+	it("changes lowercase letters to uppercase letters", function(){
+		expect(lib.ChangeCase("asz")).toEqual("ASZ");
+	});
+	it("changes uppercase letters to lowercase letters", function(){
+		expect(lib.ChangeCase("ASZ")).toEqual("asz");
+	});
+	it("does not change non alphabetic characters", function(){
+		expect(lib.ChangeCase("$#!")).toEqual("$#!");
+	});
+});
+\end{lstlisting}
+We can see within our \textit{describe} block we have three \textit{it} blocks - denoting three test cases.
+In each of these test cases we have one assertion - respectively checking expected result of passing lower case, upper case, and
+non-alphabetic characters to our \textit{ChangeCase} function.
+Notice the use of boundary value analysis within our equivalence classes.
+Points to take away from this subsection:
+\begin{enumerate}
+	\item One test case should test for one particular feature / branch of our function.
+	\item Our test code will have one or more test suites, and those in turn are going to have one or more test cases.
+		How we define test suites and test cases will depend on the framework we are testing.
+	\item Test cases contain assertions, there are a wide range of assertions apart from 
+		``assert whether something is equal to some other thing''. Explore your framework's documentation to check them out.
+	\item While constructing test cases pay special attention to boundary value analysis and equivalence classes.
+\end{enumerate}
+
+\subsubsection{Running the Test Cases}
+If we go to our parent directory i.e. \textit{ChangeCase} directory and run the following command:
+\begin{verbatim}
+jasmine
+\end{verbatim}
+we should see three green dots denoting successful completion of our three test cases.
+If for some reason a test case fails, we will see the `F' character in red - denoting unsuccessful completion of the test case.
+It will provide us a message from which we will be able to understand exactly which test case failed.
+Here's an \textbf{exercise} for you - 
+deliberately fail a test case and see whether you can figure out which test case failed from the message.
+
+So this was a pretty simple example on how to perform unit testing. In real life scenario you will most probably have to perform more
+complex assertions. But the underlying concepts are pretty much the same.
+
+\subsection{Test Driven Development - TDD}
+When it comes to testing we often hear the term TDD - test driven development.
+The philosophy behind it is that our testing should drive our development.
+Even before we write our source code, we are encouraged to think about what our code should do (one feature at a time), 
+and write test cases for that feature (one test case at a time).
+Obviously if we write our test case before any kind of source code and run them, our test case will fail (the red `F' will show up).
+Once we see the red message, we write our code that implements the feature we are testing.
+If everything goes according to our plan, we should see green dot when we run the test cases.
+As a final step we can ``refactor'' our code - meaning we can optimize our code, remove duplicate codes, etc.
+Once we are done with one particular feature we move on to the next feature and perform the same cycle - 
+write test (see it fail), write code (watch the test pass), refactor (improve our code).
+So in short we can come up with the following steps of test driven development: 
+\begin{enumerate}
+	\item Write test.
+	\item See the test fail.
+	\item Write code.
+	\item See the test pass.
+	\item Refactor code.
+	\item Start again from step 1.
+\end{enumerate}
+This cycle is commonly termed as the ``red-green-refactor'' cycle.
+The main motivating factor behind TDD is that when we are writing the test cases first, we are forced to think about
+what our code should do - this creates a clear vision on our mind. Moreover as we are concentrating on only one feature at a time,
+it is easier for us to employ our whole energy in solving that single problem.
+
+\section{MVC (Model View Controller) Design Pattern}
+At the core of MVC design pattern is separation of responsibility.
+As the name suggests, we are talking about the interaction among three components - the model, the view, and the controller.
+
+The \textbf{model} deals with persistent storage, such as database, json file, xml file, etc.
+Doesn't matter where you have decided to store data, 
+if you are planning on manipulating (create, read, update, delete - CRUD) that data, 
+it should be done through the model.
+
+The \textbf{view} deals with the front end, whatever the end users are seeing. 
+So in general we can say the user interface is created by the view.
+
+The \textbf{controller} is the think tank of our software. It maintains liaison between the view and the model.
+When should one view be invoked, when should a model be sent to fetch data, etc. - these kinds of shots are all called by the controller.
+
+To make the concept a bit more concrete, let's consider a scenario.
+Suppose you want to login to mail.google.com.
+When you type in the url you are presented with a form to enter your username and password.
+Once you've done that your credentials are checked against the database to see if a user with the supplied credentials actually exists.
+If so you are logged in, otherwise not.
+Here are a few questions:
+\begin{itemize}
+	\item Who created the outline (like how many fields should be there, how they should be arranged, etc.) 
+		of the form that you are shown during logging in? \textbf{View}.
+	\item Who checked the supplied credentials by actually hitting the database? \textbf{Model}.
+	\item Who planned out the whole thing that the application should grab the info supplied in the form and send it to the model
+		for checking? \textbf{Controller}.
+\end{itemize}
+
+So that's pretty much it on the MVC pattern. Let us take a look at a few industry standard MVC frameworks next.
+
+\subsection{Framework Review}
+If you are planning on developing for the web you have quite a lot of options depending on your preferred language.
+If your preferred language is PHP you have the following options:
+\begin{description}
+	\item[Codeigniter] An extremely fast and a very lightweight framework, capable of doing all kinds of heavy duty job.
+		The major problem is that it is also extremely outdated. It hasn't been updated in a long time and lacks a lot of
+		features of modern PHP. It is a great framework, no way to deny that - and it will survive a few more years
+		as a lot of projects are still running on it. 
+		But if anyone is starting fresh, it is better to choose something else.
+	\item[Laravel] Perhaps currently the most popular framework. Compared to other giants it is quite new.
+		A very user friendly framework with a lot of cool features.
+		The community is very strong. A lot of codeigniter users have switched to using laravel in the recent past
+		(including me - I moved from codeigniter to laravel in early 2013).
+		It is also a pretty fast framework - but not as fast as codeigniter.
+	\item[Symfony, Yii] Laravel took a lot of features from Symfony, if someone compares the codebase he/she is going to
+		find that a lot of their codebase are quite similar. But somehow Laravel is way faster than Symfony.
+	\item[PhalconPHP] Currently the fastest PHP framework out there. It is implemented as a C extension directly in the PHP laguage,
+		so surpasses any other framework in speed.
+	\item[Zend, CakePHP] In the past both of them have been in high demand. Problem with Zend is it is not that user-friendly.
+		CakePHP is extremely slow. I wouldn't suggest anyone starting out with these two.
+\end{description}
+If your preferred language is Python:
+\begin{description}
+	\item[Django] A great framework able to perform every sort of work. If you are going with Python, just choose this.
+	\item[Flask] A lightweight framework for Python, if you are developing a website with simple features - go with flask.
+\end{description}
+We can't really ignore another language when it comes to web development - Ruby:
+\begin{description}
+	\item[Ruby on Rails] RoR for short - is the framework that actually revolutionized the MVC concept in regards to web development.
+		Not a very big community, but a pretty strong one.
+	\item[Sinatra] A lightweight framework for Ruby, kind of like what Flask is to Python.
+\end{description}
+If you are thinking of developing desktop applications you simply can't ignore \textbf{Qt} and its variants.
+Qt is a great framework to develop desktop applications in C++. It has been around for quite a while and the community is pretty strong.
+If you are thinking of developing in Python you can go with \textbf{PyQt}.
+So pretty much whatever you decide to work with - chances are there are going to be more than one industry standard MVC framework for it.
+In case you can't find a framework, organize your code in such a way that you can differentiate your model, view, and controller.
+
+\section{Git}
+Git is what we call a version control system (VCS).
+It is exactly what it sounds like - it maintains various versions of our code base.
+Technically it doesn't have to be ``codes'', any text file can be tracked by git.
+Even binary files, say images, can be tracked - although this is not commonly seen.
+Git also allows us to collaborate with our team members in a feasible manner.
+In your term project you are going to work in groups, make sure that you use git and collaborate through a remote server, like github.
+Another aspect of git which many of us do not pay much attention to is git is actually a great way to advertise your expertise.
+It lets others know what you have been working on, and a great way to assess someone is through his/her work.
+
+\subsection{The Three Tier Architecture of Git}
+Git follows what is known as a three tier (level) architecture:
+\begin{enumerate}
+	\item working directory,
+	\item staging index, and
+	\item repository.
+\end{enumerate}
+When you first write something in your file, it is in the working directory.
+After that you can invoke the \verb|git add| command to copy it to staging index.
+Finally a \verb|git commit| puts all your staged work in the repository (``commits'' your work to repository).
+So once in a while when you are satisfied with your progress, make sure you perform these two (add and commit) commands.
+
+\subsection{Installation}
+For unix users, again installation is super simple. For example if you are using Ubuntu the following command will install git:
+\begin{lstlisting}[language=bash]
+	$ sudo apt-get install git
+\end{lstlisting}
+If you are using Windows, go to \textit{git-scm.com} to download the binaries.
+
+After installation, be sure to set some configuration information, namely username and email address:
+\begin{lstlisting}[language=bash]
+	$ git config --global user.name <your_name>
+	$ git config --global user.email <your_email_address>
+\end{lstlisting}
+
+The best way to learn git is to get your hands dirty straight away, so let's do that.
+
+\subsection{Creating a Repository - git init}
+Suppose you want to create a repository inside a directory named \textit{git-prac}.
+You can invoke the following commands to do so:
+\begin{lstlisting}[language=bash]
+	$ mkdir git-prac
+	$ cd git-prac
+	$ git init
+\end{lstlisting}
+You will see a message stating that an empty repository has been initialized.
+If you invoke \verb|ls -a| command you will see that git actually created a hidden directory named \textit{.git}.
+Chances are, you will never have to deal with this directory directly.
+Rather the various commands that you invoke will do that for you.
+Bear in mind that removing a repository simply comes down to removing this \textit{.git} directory.
+
+\subsection{Man Page for Git Commands - git help <command>}
+Anytime you need to know a bit more about any git command, simply invoke \verb|git help <command_name>|.
+
+\subsection{Status Report - git status}
+\verb|git status| shows the current status of the three tiers.
+\textbf{Read the status reports carefully} - you will get a bettern grip on git this way.
+Recall that we are still in an empty directory.
+Invoke the status command and see what the output is.
+Notice the report gives you a small hint that you can create/copy a file and invoke the add command.
+Let us create a file and see the status report again:
+\begin{lstlisting}[language=bash]
+	$ touch hello.txt
+	$ git status
+\end{lstlisting}
+The status report shows the file in red and says that the file is not being tracked.
+We will not be able to store various versions of this file unless we track it.
+It also gives us a hint as to what we can do to make it ``trackable''.
+
+\subsection{Copy Files to Staging Index - git add}
+Let us invoke \verb|git add| command and see the status report again:
+\begin{lstlisting}[language=bash]
+	$ git add hello.txt
+	$ git status
+\end{lstlisting}
+Here we are invoking add with a specific file name, if we supply `.' it will simply add all untracked/modified files.
+The status report will let you know that changes can be committed now, i.e. moved to the repository.
+It also says something about a command named ``rm''.\\ \textbf{Exercise}: find out what \textit{git rm} does by
+invoking \verb|git help rm|. Specifically concentrate on the ``cached'' option.
+
+\subsection{Copy from Staging Index to Repository - git commit}
+\verb|git commit -m "message"| commits all the changes in the staging index to our repository.
+Let us invoke the command and see the status report:
+\begin{lstlisting}[language=bash]
+	$ git commit -m "initial commit"
+	$ git status
+\end{lstlisting}
+After commit you are going to see a message containing a sequence of seven hexadecimal characters.
+This is the starting of a 40 character hash value that is created by passing the contents of your file, the current timestamp, etc.
+to the SHA1 algorithm (a hashing algorithm).
+Every commit in your repository can be uniquely identified through this 40 character value.
+Generally these values are so diversified that specifying only the first 5-7 characters is enough to uniquely identify a commit.
+\\\textbf{Exercise}: Find out what \verb|git commit -am <commit message>| does.
+
+\subsection{Review Commits - git log}
+\verb|git log| allows us to see all the commits we've made so far.
+It shows the hash value and commit message of each of the commits made.
+Notice that it shows the commits in chronologically reverse order i.e. the latest commit is shown first.
+\\\textbf{Exercise}: how can we see only the last 3 commits we've made?
+
+\subsection{Ignoring File - .gitignore}
+There are certain files we would not generally want to keep track of.
+For example, when we compile a latex file with pdflatex, it generates a log file, an aux file, and a pdf file.
+We would not really want to maintain versions of these files, as we can easily generate these from the tex file.
+So basically we would want to instruct git to ignore these files. This is where the \textit{.gitignore} file comes in.
+In this case we would simply create a .gitignore file with the following lines in it:
+\begin{verbatim}
+*.log
+*.aux
+*.pdf
+\end{verbatim}
+Notice the use of wild card matcher ``*'', which would make git ignore any files ending with the stated extensions.
+
+\subsection{Find Differences between Versions - git diff}
+To get a taste of this command let's create some changes to our \textit{hello.txt} file:
+\begin{lstlisting}[language=bash]
+	$ echo "first line - commit 2" >> hello.txt
+	$ echo "second line - commit 2" >> hello.txt
+	$ git add hello.txt
+	$ git commit -m "add two lines to hello.txt"
+\end{lstlisting}
+By the first two commands we are simply appending some texts to our files.
+Let us make some more changes and commit again:
+\begin{lstlisting}[language=bash]
+	$ echo "third line - commit 3" >> hello.txt
+	$ echo "fourth line - commit 3" >> hello.txt
+	$ git add hello.txt
+	$ git commit -m "add second set of two lines to hello.txt"
+\end{lstlisting}
+Let us make a change and stage the change. This time we will not commit.
+\begin{lstlisting}[language=bash]
+	$ echo "this line has been staged only" >> hello.txt
+	$ git add hello.txt
+\end{lstlisting}
+Let us make a final change - this time we will not even stage our changes.
+\begin{lstlisting}[language=bash]
+	$ echo "this line is only in the working directory" >> hello.txt
+\end{lstlisting}
+Now do a \verb|git log| and note down the first five characters of the hash value of each of the three commits.
+\\ \textbf{Exercise}: Execute the following commands and try to understand the messages in the terminal:
+\begin{lstlisting}[language=bash]
+	$ git diff <short-hash-of-commit1> <short-hash-of-commit2>
+	$ git diff <short-hash-of-commit2> <short-hash-of-commit1>
+	$ git diff <short-hash-of-commit1> <short-hash-of-commit3>
+	$ git diff <short-hash-of-commit3> <short-hash-of-commit1>
+	$ git diff <short-hash-of-commit2> <short-hash-of-commit3>
+	$ git diff <short-hash-of-commit3> <short-hash-of-commit2>
+	$ git diff
+	$ git diff --cached
+	$ git diff --staged
+\end{lstlisting}
+Is there any difference between the last two commands? What is the difference between \verb|git diff| and the last two commands?
+
+\subsection{Branches in Git}
+Branches can be thought of as a particular line of development.
+Suppose you are developing a software and at a certain point you need to create a fix for a bug that came to your knowledge.
+But you are a bit worried that if you keep on working with the current files your present workflow might get hampered.
+In this case you can create a ``branch'' and work on that branch.
+Once you are satisfied with your bugfix, you can simply ``merge'' the changes in your two branches - i.e. combine them.
+The default branch you are working on from the beginning is known as the \textit{master} branch.
+When you create a branch, all of your current commits sort of get copied to the new branch, and you can work on that branch separately.
+Be advised that whatever commits you make on one branch will not affect the other (unless you are performing a merge).
+Let us create a branch named bugfix and ``checkout'' (i.e. switch to) that branch.
+\begin{lstlisting}[language=bash]
+	$ git branch bugfix
+	$ git checkout bugfix
+	$ git branch
+\end{lstlisting}
+The first command creates a branch named bugfix, the second one switches to the new branch,
+and the last one simply shows a list of branches.
+The current branch is highlighted in green with an asterisk on the side. The \verb|git checkout| command is actually quite versatile.
+Suppose you want to overwrite the current \textit{hello.txt} file with the one in the second commit.
+You can do so by the following command.
+\begin{lstlisting}[language=bash]
+	$ git checkout <short-hash-of-commit2> -- hello.txt
+\end{lstlisting}
+Notice that this will also overwrite the file in staging index.
+The two dash preceeding the filename is considered a good practice, it denotes that we are indeed checking out a file and not a branch.
+In case our filename has the same name as that of a branch, git would become confused.
+When you are satisfied with your work in bugfix and feel that you are ready to merge the changes to the master branch,
+you can perform the following steps:
+\begin{enumerate}
+	\item Commit all changes while you are in the bugfix branch. 
+		In general it is better to always commit changes while switching branches.
+	\item Switch to the master branch.
+	\item Invoke the command \verb|git merge bugfix|.
+\end{enumerate}
+\textbf{Exercise}: What does \verb|git checkout -b <branchname>| do? How can you delete a branch?
+How can you compare two branches?
+
+\subsection{Working with Remotes - Intro to Github}
+There are a lot of remote servers that let us host our repositories and collaborate with others.
+Github is certainly the most popular one among them (BitBucket, GitLab, etc. are also pretty cool).
+Suppose we want to store our local repository that we've been working on to a remote server - in this case a github account.
+The first thing you need to do is create an account in \textit{github.com} - it's free.
+The only downside is all the repositories will be public.
+But as long as you are working on an open source project or say your term project, it shouldn't hurt.
+If you are looking for private repos for free checkout BitBucket.
+After our account has been created, we need to create a new repository.
+You will be presented with a \textit{url} after successful creation of the repo.
+Then you will have to invoke the following commands:
+\begin{lstlisting}[language=bash]
+	$ git remote add origin <url>
+	$ git push origin master
+\end{lstlisting}
+In the first line you are recording the url of your remote repository.
+You are also supplying an alias (i.e. a nickname) to your remote - origin.
+This is a traditional name given to the primary remote, but it could be anything you want.
+In the second line you are pushing (i.e. uploading) the master branch of your repository to your remote.
+At this point you will be prompted for your username and password, just type in your credentials and you will be good to go.
+Notice that the password will not be visible on the screen as you type it in.
+Now if you refresh your webpage you are going to see that the repo in your local drive has been uploaded to your remote.
+
+\subsection{Copying a Repo - git clone and Forking}
+Suppose you are loitering around github (or any such website) and you come across a really awesome repo.
+You would really love to work on this repo.
+You can invoke \verb|git clone <url>|, this will create a copy of the repo on your local hard drive.
+There is something known as ``forking''.
+It simply means copying a repo on the server side.
+Basically if you press the fork button on a user's repo in github, that repo will be copied to your github account.
+
+\subsection{Collaboration through Github}
+It is really easy to collaborate with your group members through github.
+When you create a public repo, anyone can copy that repo and work on his/her copy.
+But no one can modify your copy - only you have that option.
+But to collaborate in a group you must grant some permissions to your groupmates.
+You can do this by adding ``collaborators'' for your repo.
+Go to the settings page of your repo and find the ``Collaborators'' option.
+From there you can add your groupmates as the collaborators.
+They will be able to modify your repo, but will not be able to delete it.
+
+While we are on the topic of collaboration, let's talk about \verb|git pull|.
+Consider a scenario where two users, User1 and User2 are working on a project.
+User1 does some coding and uploads the repo to the remote server.
+Now User2 does not have anything on his local drive, so he performs a \verb|git clone|.
+Suppose he starts working on the local copy.
+After some time he wants to push the changes to the remote.
+Should he straight away start pushing everything to the remote?
+Well, no; because while User2 was making some changes, perhaps User1 pushed some changes to the server too.
+So he first needs to update his local copy to reflect those changes, and he does so by the command \verb|git pull <url>|.
+This command simply combines two other commands - \verb|fetch| and \verb|merge| -
+the contents are first fetched from the remote and then merged to the local copy.
+Now that User2 is confident that he has all the updates, he can push the changes by invoking \verb|push|.
+Same thing applies for all other users.
+
+\end{document}
