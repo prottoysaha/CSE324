@@ -495,6 +495,8 @@ This is the starting of a 40 character hash value that is created by passing the
 to the SHA1 algorithm (a hashing algorithm).
 Every commit in your repository can be uniquely identified through this 40 character value.
 Generally these values are so diversified that specifying only the first 5-7 characters is enough to uniquely identify a commit.
+Git has a special pointer named \textbf{HEAD} which simply points to the latest commit on the current branch 
+(more on branching in subsection~\ref{subsec:branches}).
 \\\textbf{Exercise}: Find out what \verb|git commit -am <commit message>| does.
 
 \subsection{Review Commits - git log}
@@ -557,6 +559,7 @@ Now do a \verb|git log| and note down the first five characters of the hash valu
 Is there any difference between the last two commands? What is the difference between \verb|git diff| and the last two commands?
 
 \subsection{Branches in Git}
+\label{subsec:branches}
 Branches can be thought of as a particular line of development.
 Suppose you are developing a software and at a certain point you need to create a fix for a bug that came to your knowledge.
 But you are a bit worried that if you keep on working with the current files your present workflow might get hampered.
