@@ -1,0 +1,36 @@
+RED='\033[0;31m'
+NC='\033[0m'
+
+#update package list
+printf "${RED}\n\nupdating package list\n\n${NC}"
+sudo apt-get update
+
+#install apache
+printf "${RED}\n\ninstalling apache\n\n${NC}"
+sudo apt-get install apache2
+
+#install mysql
+printf "${RED}\n\ninstalling mysql\n\n${NC}"
+sudo apt-get install mysql-server
+
+#install php
+printf "${RED}\n\ninstalling php5\n\n${NC}"
+sudo apt-get install php5 php-pear
+sudo apt-get install php5-mysql
+sudo apt-get install libapache2-mod-php5
+
+#install composer - curl/php5-cli/git required
+printf "${RED}\n\ninstalling composer: depends on curl, php5-cli, and git\n\n${NC}"
+sudo apt-get install curl php5-cli git
+php -r "readfile('https://getcomposer.org/installer');" > composer-setup.php
+php -r "if (hash('SHA384', file_get_contents('composer-setup.php')) === '41e71d86b40f28e771d4bb662b997f79625196afcca95a5abf44391188c695c6c1456e16154c75a211d238cc3bc5cb47') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+sudo mv composer.phar /usr/local/bin/composer
+
+#change apache root
+printf "${RED}\n\nchanging apache root\n\n${NC}"
+sudo mv /var/www/html/index.html /var/www/index.html
+sudo rm -rf /var/www/html
+sudo sed -i -e 's/\/var\/www\/html/\/var\/www/g' /etc/apache2/sites-available/000-default.conf
+sudo service apache2 restart
